@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { browser } from '$app/environment';
   import { afterNavigate, goto, invalidateAll } from '$app/navigation';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
@@ -28,8 +29,9 @@
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { joinPaths } from '$lib/utils/tree-utils';
-  import { ActionButton, CommandPaletteDefaultProvider, IconButton, Text } from '@immich/ui';
-  import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiSelectAll } from '@mdi/js';
+  import { AssetMediaSize } from '@immich/sdk';
+  import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, Text } from '@immich/ui';
+  import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiMagnify, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -41,6 +43,29 @@
 
   const viewport: Viewport = $state({ width: 0, height: 0 });
   const assetInteraction = new AssetInteraction();
+
+  const ZOOM_KEY = 'folders-zoom-level';
+  const DEFAULT_ZOOM = 235;
+
+  let zoomLevel = $state(browser ? Number(localStorage.getItem(ZOOM_KEY) || DEFAULT_ZOOM) : DEFAULT_ZOOM);
+
+  $effect(() => {
+    if (browser) {
+      localStorage.setItem(ZOOM_KEY, String(zoomLevel));
+    }
+  });
+
+  const maxNativeHeight = $derived(
+    data.pathAssets && data.pathAssets.length > 0
+      ? Math.max(...data.pathAssets.map((a) => a.exifInfo?.exifImageHeight ?? 0))
+      : 0,
+  );
+
+  const maxZoom = $derived(
+    viewport.width > 0 ? Math.min(viewport.width, maxNativeHeight || viewport.width) : DEFAULT_ZOOM,
+  );
+
+  const assetSize = $derived(zoomLevel > 250 ? AssetMediaSize.Preview : AssetMediaSize.Thumbnail);
 
   const handleNavigateToFolder = (folderName: string) => navigateToView(joinPaths(data.tree.path, folderName));
 
@@ -90,7 +115,22 @@
     </Sidebar>
   {/snippet}
 
-  <Breadcrumbs node={data.tree} icon={mdiFolderHome} title={$t('folders')} getLink={getLinkForPath} />
+  <Breadcrumbs node={data.tree} icon={mdiFolderHome} title={$t('folders')} getLink={getLinkForPath}>
+    {#snippet extra()}
+      <div class="flex items-center gap-2 pe-1">
+        <Icon icon={mdiMagnify} class="text-gray-500 dark:text-gray-300 shrink-0" size="16" />
+        <input
+          type="range"
+          min={DEFAULT_ZOOM}
+          max={maxZoom}
+          step={5}
+          bind:value={zoomLevel}
+          class="w-32 cursor-pointer accent-immich-primary"
+          aria-label={$t('zoom')}
+        />
+      </div>
+    {/snippet}
+  </Breadcrumbs>
 
   <section class="mt-2 h-[calc(100%-(--spacing(25)))] overflow-auto immich-scrollbar">
     <TreeItemThumbnails items={data.tree.children} icon={mdiFolder} onClick={handleNavigateToFolder} />
@@ -105,6 +145,8 @@
           showAssetName={true}
           pageHeaderOffset={54}
           onReload={triggerAssetUpdate}
+          rowHeight={zoomLevel}
+          {assetSize}
         />
       </div>
     {/if}

@@ -34,6 +34,7 @@
     thumbnailSize?: number;
     thumbnailWidth?: number;
     thumbnailHeight?: number;
+    assetSize?: AssetMediaSize;
     selected?: boolean;
     selectionCandidate?: boolean;
     disabled?: boolean;
@@ -56,6 +57,7 @@
     thumbnailSize = undefined,
     thumbnailWidth = undefined,
     thumbnailHeight = undefined,
+    assetSize = AssetMediaSize.Thumbnail,
     selected = false,
     selectionCandidate = false,
     disabled = false,
@@ -250,7 +252,7 @@
       <ImageThumbnail
         class={['absolute group-focus-visible:rounded-lg', { 'rounded-xl': selected }, imageClass]}
         brokenAssetClass={['z-1 absolute group-focus-visible:rounded-lg', { 'rounded-xl': selected }, brokenAssetClass]}
-        url={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
+        url={getAssetMediaUrl({ id: asset.id, size: assetSize, cacheKey: asset.thumbhash })}
         altText={$getAltText(asset)}
         widthStyle="{width}px"
         heightStyle="{height}px"

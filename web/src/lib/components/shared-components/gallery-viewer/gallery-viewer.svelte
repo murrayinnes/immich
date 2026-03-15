@@ -14,6 +14,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { handlePromiseError } from '$lib/utils';
+  import { AssetMediaSize } from '@immich/sdk';
   import { deleteAssets } from '$lib/utils/actions';
   import {
     archiveAssets,
@@ -46,6 +47,8 @@
     slidingWindowOffset?: number;
     arrowNavigation?: boolean;
     allowDeletion?: boolean;
+    rowHeight?: number;
+    assetSize?: AssetMediaSize;
   };
 
   let {
@@ -62,6 +65,8 @@
     pageHeaderOffset = 0,
     arrowNavigation = true,
     allowDeletion = true,
+    rowHeight = undefined,
+    assetSize = AssetMediaSize.Thumbnail,
   }: Props = $props();
 
   let { isViewing: isViewerOpen, asset: viewingAsset } = assetViewingStore;
@@ -71,7 +76,7 @@
     getJustifiedLayoutFromAssets(assets, {
       spacing: 2,
       heightTolerance: 0.5,
-      rowHeight: Math.floor(viewport.width) < 850 ? 100 : 235,
+      rowHeight: rowHeight ?? (Math.floor(viewport.width) < 850 ? 100 : 235),
       rowWidth: Math.floor(viewport.width),
     }),
   );
@@ -393,6 +398,7 @@
             selectionCandidate={assetInteraction.hasSelectionCandidate(currentAsset.id)}
             thumbnailWidth={geometry.getWidth(i)}
             thumbnailHeight={geometry.getHeight(i)}
+            {assetSize}
           />
           {#if showAssetName && !isTimelineAsset(asset)}
             <div
