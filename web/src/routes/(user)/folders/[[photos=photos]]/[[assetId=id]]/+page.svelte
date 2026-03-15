@@ -55,6 +55,33 @@
     }
   });
 
+  type SortKey = 'title' | 'date';
+  const SORT_KEY = 'folders-sort';
+  const DEFAULT_SORT: SortKey = 'title';
+
+  let sortBy = $state<SortKey>(browser ? ((localStorage.getItem(SORT_KEY) as SortKey) ?? DEFAULT_SORT) : DEFAULT_SORT);
+
+  $effect(() => {
+    if (browser) {
+      localStorage.setItem(SORT_KEY, sortBy);
+    }
+  });
+
+  const sortedAssets = $derived.by(() => {
+    if (!data.pathAssets) return [];
+    const assets = [...data.pathAssets];
+    switch (sortBy) {
+      case 'date':
+        return assets.sort((a, b) => a.fileCreatedAt.localeCompare(b.fileCreatedAt));
+      default:
+        return assets.sort((a, b) =>
+          (a.exifInfo?.description ?? a.originalFileName).localeCompare(
+            b.exifInfo?.description ?? b.originalFileName,
+          ),
+        );
+    }
+  });
+
   const maxNativeHeight = $derived(
     data.pathAssets && data.pathAssets.length > 0
       ? Math.max(...data.pathAssets.map((a) => a.exifInfo?.exifImageHeight ?? 0))
@@ -115,7 +142,14 @@
 
   <Breadcrumbs node={data.tree} icon={mdiFolderHome} title={$t('folders')} getLink={getLinkForPath}>
     {#snippet extra()}
-      <div class="flex items-center gap-2 pe-1">
+      <div class="flex items-center gap-3 pe-1">
+        <select
+          bind:value={sortBy}
+          class="text-xs bg-transparent border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 text-gray-600 dark:text-gray-300 cursor-pointer focus:outline-none"
+        >
+          <option value="title">Title</option>
+          <option value="date">Date</option>
+        </select>
         <Icon icon={mdiMagnify} class="text-gray-500 dark:text-gray-300 shrink-0" size="16" />
         <input
           type="range"
@@ -134,10 +168,10 @@
     <TreeItemThumbnails items={data.tree.children} icon={mdiFolder} onClick={handleNavigateToFolder} />
 
     <!-- Assets -->
-    {#if data.pathAssets && data.pathAssets.length > 0}
+    {#if sortedAssets.length > 0}
       <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width} class="mt-2">
         <GalleryViewer
-          assets={data.pathAssets}
+          assets={sortedAssets}
           {assetInteraction}
           {viewport}
           showAssetName={false}
