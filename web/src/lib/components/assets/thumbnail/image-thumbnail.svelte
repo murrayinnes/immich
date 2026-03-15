@@ -17,6 +17,7 @@
     hidden?: boolean;
     border?: boolean;
     hiddenIconClass?: string;
+    objectFit?: 'cover' | 'contain';
     class?: ClassValue;
     brokenAssetClass?: ClassValue;
     preload?: boolean;
@@ -35,6 +36,7 @@
     hidden = false,
     border = false,
     hiddenIconClass = 'text-white',
+    objectFit = 'cover',
     onComplete = undefined,
     class: imageClass = '',
     brokenAssetClass = '',
@@ -74,7 +76,7 @@
     src={url}
     onLoad={setLoaded}
     onError={setErrored}
-    class={['object-cover bg-gray-300 dark:bg-gray-700', sharedClasses, imageClass]}
+    class={[objectFit === 'contain' ? 'object-contain' : 'object-cover', 'bg-gray-300 dark:bg-gray-700', sharedClasses, imageClass]}
     {style}
     alt={loaded || errored ? altText : ''}
     draggable={false}

@@ -43,6 +43,7 @@
     showArchiveIcon?: boolean;
     showStackedIcon?: boolean;
     imageClass?: ClassValue;
+    imageObjectFit?: 'cover' | 'contain';
     brokenAssetClass?: ClassValue;
     dimmed?: boolean;
     albumUsers?: UserResponseDto[];
@@ -70,6 +71,7 @@
     onSelect = undefined,
     onMouseEvent = undefined,
     imageClass = '',
+    imageObjectFit = 'cover',
     brokenAssetClass = '',
     dimmed = false,
   }: Props = $props();
@@ -256,6 +258,7 @@
         altText={$getAltText(asset)}
         widthStyle="{width}px"
         heightStyle="{height}px"
+        objectFit={imageObjectFit}
         curve={selected}
         onComplete={(errored) => ((loaded = true), (thumbError = errored))}
       />

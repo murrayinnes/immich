@@ -61,11 +61,9 @@
       : 0,
   );
 
-  const maxZoom = $derived(
-    viewport.width > 0 ? Math.min(viewport.width, maxNativeHeight || viewport.width) : DEFAULT_ZOOM,
-  );
+  const effectiveWidth = $derived(viewport.width > 0 ? viewport.width : (browser ? window.innerWidth : DEFAULT_ZOOM));
 
-  const assetSize = $derived(zoomLevel > 250 ? AssetMediaSize.Preview : AssetMediaSize.Thumbnail);
+  const maxZoom = $derived(Math.min(effectiveWidth, maxNativeHeight || effectiveWidth));
 
   const handleNavigateToFolder = (folderName: string) => navigateToView(joinPaths(data.tree.path, folderName));
 
@@ -142,11 +140,11 @@
           assets={data.pathAssets}
           {assetInteraction}
           {viewport}
-          showAssetName={true}
+          showAssetName={false}
           pageHeaderOffset={54}
           onReload={triggerAssetUpdate}
           rowHeight={zoomLevel}
-          {assetSize}
+          assetSize={AssetMediaSize.Preview}
         />
       </div>
     {/if}

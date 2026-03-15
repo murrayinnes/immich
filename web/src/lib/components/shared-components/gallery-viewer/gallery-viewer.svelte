@@ -399,6 +399,7 @@
             thumbnailWidth={geometry.getWidth(i)}
             thumbnailHeight={geometry.getHeight(i)}
             {assetSize}
+            imageObjectFit="contain"
           />
           {#if showAssetName && !isTimelineAsset(asset)}
             <div
